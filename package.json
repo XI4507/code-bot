@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "name": "code-bot",
   "version": "1.0.0",
   "description": "code review agent",
