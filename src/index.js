@@ -1,4 +1,4 @@
-import { getChangedFiles, postComment } from "./github.js";
+import { getChangedFiles, postComment } from "./github";
 import { reviewCode } from "./review.js";
 import axios from "axios";
 
