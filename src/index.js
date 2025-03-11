@@ -54,7 +54,7 @@ async function postComment(owner, repo, pull_number, comment) {
     console.log("✅ Comment posted successfully!");
   } catch (error) {
     console.error(
-      "Error posting comment:",
+      "Error posting comment -- ",
       error.response?.data || error.message
     );
   }
@@ -67,6 +67,7 @@ async function performCodeReview(owner, repo, pull_number, branch) {
     console.log("📂 Changed files:", changedFiles);
 
     for (const file of changedFiles) {
+      console.log(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file}`)
       try {
         const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file}`;
         const { data: code } = await axios.get(url);
@@ -90,5 +91,5 @@ async function performCodeReview(owner, repo, pull_number, branch) {
 }
 
 // Run the function (replace with real PR number)
-const [owner, repo, pull_number, branch] = process.argv.slice(2);
-performCodeReview(owner, repo, pull_number, branch);
+// const [owner, repo, pull_number, branch] = process.argv.slice(2);
+performCodeReview("XI4507", "code-bot", 2, 'test-two');
