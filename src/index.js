@@ -15,7 +15,7 @@ const openai = new OpenAIApi(
   new Configuration({ apiKey: process.env.OPENAI_API_KEY })
 );
 
-// AI-based code review function
+/// AI-based code review function
 async function reviewCode(code) {
   try {
     const prompt = `You are a professional code reviewer. Analyze the following code and provide constructive feedback:\n\n${code}`;
@@ -31,7 +31,7 @@ async function reviewCode(code) {
   }
 }
 
-// Get changed files in a pull request
+/// Get changed files in a pull request
 async function getChangedFiles(owner, repo, pull_number) {
   try {
     const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pull_number}/files`;
