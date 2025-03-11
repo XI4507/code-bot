@@ -5,6 +5,7 @@
   "description": "code review agent",
   "main": "index.js",
   "scripts": {
+    "start": "node src/index.js",
     "test": "zest"
   },
   "repository": {
