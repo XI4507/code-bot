@@ -24,6 +24,6 @@ jobs:
 
       - name: Run Code Review
         env:
-          GITHUB_TOKEN: ${{ secrets.SECRET_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: node src/index.js ${{ github.repository_owner }} ${{ github.event.repository.name }} ${{ github.event.pull_request.number }} main
