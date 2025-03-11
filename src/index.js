@@ -82,11 +82,11 @@ async function performCodeReview(owner, repo, pull_number, branch) {
           );
         }
       } catch (error) {
-        console.error(`❌ Error fetching file ${file}:`, error.message);
+        console.error(`Error fetching file ${file}:`, error.message);
       }
     }
   } catch (error) {
-    console.error("❌ Error performing code review:", error.message);
+    console.error("Error performing code review:", error.message);
   }
 }
 
