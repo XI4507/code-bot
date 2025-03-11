@@ -4,7 +4,7 @@ import axios from "axios";
 
 async function performCodeReview(owner, repo, pull_number, branch) {
   try {
-    console.log("Fetching changed files...");
+    console.log("Fetching changed files");
     const changedFiles = await getChangedFiles(owner, repo, pull_number);
     console.log("Changed files:", changedFiles);
 
