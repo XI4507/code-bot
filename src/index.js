@@ -4,9 +4,9 @@ import axios from "axios";
 
 async function performCodeReview(owner, repo, pull_number, branch) {
   try {
-    console.log("🚀 Fetching changed files...");
+    console.log("Fetching changed files...");
     const changedFiles = await getChangedFiles(owner, repo, pull_number);
-    console.log("📂 Changed files:", changedFiles);
+    console.log("Changed files:", changedFiles);
 
     for (const file of changedFiles) {
       try {
@@ -26,6 +26,6 @@ async function performCodeReview(owner, repo, pull_number, branch) {
   }
 }
 
-// Run the function (replace with real PR number)
+
 const [owner, repo, pull_number, branch] = process.argv.slice(2);
 performCodeReview(owner, repo, pull_number, branch);
