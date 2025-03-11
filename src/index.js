@@ -54,7 +54,7 @@ async function postComment(owner, repo, pull_number, comment) {
     console.log("✅ Comment posted successfully!");
   } catch (error) {
     console.error(
-      "Error posting comment:",
+      "Error posting comment -- ",
       error.response?.data || error.message
     );
   }
