@@ -1,95 +1,78 @@
+require("dotenv").config();
+const { Octokit } = require("@octokit/rest");
 const axios = require("axios");
-const dotenv = require("dotenv");
-const { Configuration, OpenAIApi } = require("openai");
 
-dotenv.config();
+const octokit = new Octokit({
+  auth: process.env.GITHUB_TOKEN,
+});
 
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN;
+const owner = "XI4507";
+const repo = "code-bot";
+const prNumber = process.env.GITHUB_PR_NUMBER;
 
-const headers = {
-  Authorization: `token ${GITHUB_TOKEN}`,
-  Accept: "application/vnd.github.v3+json",
-};
+async function getChangedFiles() {
+  const { data } = await octokit.pulls.listFiles({
+    owner,
+    repo,
+    pull_number: prNumber,
+  });
 
-const openai = new OpenAIApi(
-  new Configuration({ apiKey: process.env.OPENAI_API_KEY })
-);
+  return data.map((file) => ({
+    filename: file.filename,
+    patch: file.patch, // Get code changes
+  }));
+}
 
-// AI-based code review function
-async function reviewCode(code) {
-  try {
-    const prompt = `You are a professional code reviewer. Analyze the following code and provide constructive feedback:\n\n${code}`;
-    const response = await openai.createChatCompletion({
+async function getReviewFromAI(codeChanges) {
+  const openaiAPIKey = process.env.OPENAI_API_KEY;
+
+  const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
+    codeChanges
+  )}`;
+
+  const response = await axios.post(
+    "https://api.openai.com/v1/chat/completions",
+    {
       model: "gpt-4",
-      messages: [{ role: "system", content: prompt }],
-    });
-
-    return response.data.choices[0].message.content.trim();
-  } catch (error) {
-    console.error("Error generating review:", error.message);
-    return "Error in AI review.";
-  }
-}
-
-// Get changed files in a pull request
-async function getChangedFiles(owner, repo, pull_number) {
-  try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pull_number}/files`;
-    const response = await axios.get(url, { headers });
-    return response.data.map((file) => file.filename);
-  } catch (error) {
-    console.error(
-      "Error fetching changed files:",
-      error.response?.data || error.message
-    );
-    return [];
-  }
-}
-
-// Post a comment on a pull request
-async function postComment(owner, repo, pull_number, comment) {
-  try {
-    const url = `https://api.github.com/repos/${owner}/${repo}/issues/${pull_number}/comments`;
-    await axios.post(url, { body: comment }, { headers });
-    console.log("✅ Comment posted successfully!");
-  } catch (error) {
-    console.error(
-      "Error posting comment -- ",
-      error.response?.data || error.message
-    );
-  }
-}
-
-async function performCodeReview(owner, repo, pull_number, branch) {
-  try {
-    console.log("🚀 Fetching changed files...");
-    const changedFiles = await getChangedFiles(owner, repo, pull_number);
-    console.log("📂 Changed files:", changedFiles);
-
-    for (const file of changedFiles) {
-      console.log(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file}`)
-      try {
-        const url = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file}`;
-        const { data: code } = await axios.get(url);
-
-        const reviewFeedback = await reviewCode(code);
-        if (reviewFeedback.trim()) {
-          await postComment(
-            owner,
-            repo,
-            pull_number,
-            `### Code Review Feedback for \`${file}\`:\n${reviewFeedback}`
-          );
-        }
-      } catch (error) {
-        console.error(`Error fetching file ${file}:`, error.message);
-      }
+      messages: [{ role: "user", content: prompt }],
+    },
+    {
+      headers: { Authorization: `Bearer ${openaiAPIKey}` },
     }
+  );
+
+  return response.data.choices[0].message.content;
+}
+
+async function postReviewComment(reviewText) {
+  await octokit.issues.createComment({
+    owner,
+    repo,
+    issue_number: prNumber,
+    body: reviewText,
+  });
+}
+
+async function runBot() {
+  try {
+    console.log("Fetching PR changes...");
+    const files = await getChangedFiles();
+
+    if (!files.length) {
+      console.log("No file changes detected.");
+      return;
+    }
+
+    console.log("Requesting AI review...");
+    const reviewText = await getReviewFromAI(files);
+
+    console.log("Posting review comment...");
+    await postReviewComment(reviewText);
+
+    console.log("Review posted successfully!");
   } catch (error) {
-    console.error("Error performing code review:", error.message);
+    console.error("Error in Code Review Bot:", error);
   }
 }
 
-// Run the function (replace with real PR number)
-// const [owner, repo, pull_number, branch] = process.argv.slice(2);
-performCodeReview("XI4507", "code-bot", 2, 'test-two');
+runBot();

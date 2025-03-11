@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/XI4507/code-bot#readme",
   "dependencies": {
+    "@octokit/rest": "^21.1.1",
     "axios": "^1.8.2",
     "dotenv": "^16.4.7",
     "openai": "^3.3.0"
