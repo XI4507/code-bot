@@ -1,6 +1,6 @@
-require("dotenv").config();
-const { Octokit } = require("@octokit/rest");
-const axios = require("axios");
+import "dotenv/config"; 
+import { Octokit } from "@octokit/rest";
+import axios from "axios"; 
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
