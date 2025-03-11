@@ -1,7 +1,6 @@
-import axios from "axios";
-import dotenv from "dotenv";
-import { Configuration, OpenAIApi } from "openai";
-
+const axios = require("axios");
+const dotenv = require("dotenv");
+const { Configuration, OpenAIApi } = require("openai");
 
 dotenv.config();
 
@@ -17,7 +16,7 @@ const openai = new OpenAIApi(
 );
 
 // AI-based code review function
-export async function reviewCode(code) {
+async function reviewCode(code) {
   try {
     const prompt = `You are a professional code reviewer. Analyze the following code and provide constructive feedback:\n\n${code}`;
     const response = await openai.createChatCompletion({
@@ -33,7 +32,7 @@ export async function reviewCode(code) {
 }
 
 // Get changed files in a pull request
-export async function getChangedFiles(owner, repo, pull_number) {
+async function getChangedFiles(owner, repo, pull_number) {
   try {
     const url = `https://api.github.com/repos/${owner}/${repo}/pulls/${pull_number}/files`;
     const response = await axios.get(url, { headers });
@@ -48,7 +47,7 @@ export async function getChangedFiles(owner, repo, pull_number) {
 }
 
 // Post a comment on a pull request
-export async function postComment(owner, repo, pull_number, comment) {
+async function postComment(owner, repo, pull_number, comment) {
   try {
     const url = `https://api.github.com/repos/${owner}/${repo}/issues/${pull_number}/comments`;
     await axios.post(url, { body: comment }, { headers });
