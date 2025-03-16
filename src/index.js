@@ -19,7 +19,7 @@ async function getChangedFiles() {
 
   return data.map((file) => ({
     filename: file.filename,
-    patch: file.patch, // Get code changes
+    patch: file.patch, 
   }));
 }
 
