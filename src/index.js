@@ -36,8 +36,6 @@ async function getReviewFromAI(codeChanges) {
     throw new Error("OPENAI_API_KEY is missing. Check your environment variables.");
   }
 
-  console.log("Using OpenAI API Key:", `"${openaiAPIKey.substring(0, 5)}..."`); 
-
   const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
     codeChanges
   )}`;
