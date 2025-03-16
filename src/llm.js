@@ -27,7 +27,7 @@ export async function getReviewFromAI(codeChanges) {
           {
             role: "system",
             content:
-              "You are a code review assistant following given guidelines and returning structured comments.",
+              "You are a code review assistant following given guidelines and returning structured comments.if the code is perfect no need to comment un-neccessary",
           },
           { role: "user", content: prompt },
         ],
