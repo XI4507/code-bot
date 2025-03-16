@@ -16,7 +16,8 @@ export async function getReviewFromAI(codeChanges) {
 
     const prompt = `Guidelines:\n${guidelines}\n\nCode Changes:\n${JSON.stringify(
       codeChanges
-    )}\n\nReview this code following the given guidelines.`;
+    )}\n\nReview the given code changes and provide line-specific comments in JSON format as:
+    [{"filename": "file1.js", "line": 10, "comment": "This line can be optimized."}, ...]`;
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
@@ -26,7 +27,7 @@ export async function getReviewFromAI(codeChanges) {
           {
             role: "system",
             content:
-              "You are a code review assistant following given guidelines.",
+              "You are a code review assistant following given guidelines and returning structured comments.",
           },
           { role: "user", content: prompt },
         ],
@@ -36,7 +37,7 @@ export async function getReviewFromAI(codeChanges) {
       }
     );
 
-    return response.data.choices[0].message.content;
+    return JSON.parse(response.data.choices[0].message.content);
   } catch (error) {
     console.error("OpenAI API Error:", error.response?.data || error.message);
     throw error;

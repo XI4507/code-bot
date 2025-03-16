@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getChangedFiles, postReviewComment } from "./octokit.js";
+import { getChangedFiles, postReviewComments } from "./octokit.js";
 import { getReviewFromAI } from "./llm.js";
 
 const prNumber = Number(process.env.PR_NUMBER);
@@ -15,12 +15,17 @@ async function runBot() {
     }
 
     console.log("Requesting AI review...");
-    const reviewText = await getReviewFromAI(files);
+    const reviewComments = await getReviewFromAI(files);
 
-    console.log("Posting review comment...");
-    await postReviewComment(prNumber, reviewText);
+    if (!reviewComments.length) {
+      console.log("No review comments generated.");
+      return;
+    }
 
-    console.log("Review posted successfully!");
+    console.log("Posting review comments...");
+    await postReviewComments(prNumber, reviewComments);
+
+    console.log("Review comments posted successfully!");
   } catch (error) {
     console.error("Error in Code Review Bot:", error);
   }

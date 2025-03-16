@@ -24,15 +24,28 @@ export async function getChangedFiles(prNumber) {
   }));
 }
 
-export async function postReviewComment(prNumber, reviewText) {
+export async function postReviewComments(prNumber, comments) {
   if (!prNumber) {
     throw new Error("PR_NUMBER is missing or invalid.");
   }
 
-  await octokit.issues.createComment({
+  const reviewPayload = {
     owner,
     repo,
-    issue_number: prNumber,
-    body: reviewText,
-  });
+    pull_number: prNumber,
+    event: "COMMENT", // "COMMENT" creates a draft review
+    comments: comments.map(({ filename, line, comment }) => ({
+      path: filename,
+      position: line, // `position` refers to the diff position in the PR
+      body: comment,
+    })),
+  };
+
+  try {
+    await octokit.pulls.createReview(reviewPayload);
+    console.log("Review comments posted successfully!");
+  } catch (error) {
+    console.error("Error posting review comments:", error.response?.data || error.message);
+    throw error;
+  }
 }
