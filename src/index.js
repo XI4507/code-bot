@@ -30,25 +30,37 @@ async function getChangedFiles() {
 }
 
 async function getReviewFromAI(codeChanges) {
-  const openaiAPIKey = process.env.OPENAI_API_KEY; 
+  const openaiAPIKey = process.env.OPENAI_KEY?.trim(); // Trim any extra spaces or newlines
+
+  if (!openaiAPIKey) {
+    throw new Error("OPENAI_KEY is missing. Check your environment variables.");
+  }
+
+  console.log("Using OpenAI API Key:", `"${openaiAPIKey.substring(0, 5)}..."`); // Mask key for security
 
   const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
     codeChanges
   )}`;
 
-  const response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
-    },
-    {
-      headers: { Authorization: `Bearer ${openaiAPIKey}` },
-    }
-  );
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4",
+        messages: [{ role: "user", content: prompt }],
+      },
+      {
+        headers: { Authorization: `Bearer ${openaiAPIKey}` },
+      }
+    );
 
-  return response.data.choices[0].message.content;
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error("OpenAI API Error:", error.response?.data || error.message);
+    throw error;
+  }
 }
+
 
 async function postReviewComment(reviewText) {
   if (!prNumber) {
