@@ -30,7 +30,7 @@ async function getChangedFiles() {
 }
 
 async function getReviewFromAI(codeChanges) {
-  const openaiAPIKey = process.env.OPENAI_API_KEY?.trim(); // Trim any extra spaces or newlines
+  const openaiAPIKey = process.env.OPENAI_API_KEY?.trim(); 
 
   if (!openaiAPIKey) {
     throw new Error("OPENAI_API_KEY is missing. Check your environment variables.");
