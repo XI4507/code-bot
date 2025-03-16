@@ -1,6 +1,6 @@
-import "dotenv/config"; 
+import "dotenv/config";
 import { Octokit } from "@octokit/rest";
-import axios from "axios"; 
+import axios from "axios";
 
 const octokit = new Octokit({
   auth: process.env.GITHUB_TOKEN,
@@ -9,6 +9,7 @@ const octokit = new Octokit({
 const owner = "XI4507";
 const repo = "code-bot";
 const prNumber = process.env.GITHUB_PR_NUMBER;
+console.log(process.env.GITHUB_PR_NUMBER);
 
 async function getChangedFiles() {
   const { data } = await octokit.pulls.listFiles({
@@ -19,7 +20,7 @@ async function getChangedFiles() {
 
   return data.map((file) => ({
     filename: file.filename,
-    patch: file.patch, 
+    patch: file.patch,
   }));
 }
 
