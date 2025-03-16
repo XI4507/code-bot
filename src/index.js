@@ -3,15 +3,20 @@ import { Octokit } from "@octokit/rest";
 import axios from "axios";
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: process.env.GH_TOKEN || "", 
 });
 
 const owner = "XI4507";
 const repo = "code-bot";
-const prNumber = process.env.GITHUB_PR_NUMBER;
+const prNumber = Number(process.env.PR_NUMBER); 
 
+console.log("PR Number:", prNumber);
 
 async function getChangedFiles() {
+  if (!prNumber) {
+    throw new Error("PR_NUMBER is missing or invalid.");
+  }
+
   const { data } = await octokit.pulls.listFiles({
     owner,
     repo,
@@ -25,27 +30,43 @@ async function getChangedFiles() {
 }
 
 async function getReviewFromAI(codeChanges) {
-  const openaiAPIKey = process.env.OPENAI_API_KEY;
+  const openaiAPIKey = process.env.OPENAI_KEY?.trim(); // Trim any extra spaces or newlines
+
+  if (!openaiAPIKey) {
+    throw new Error("OPENAI_KEY is missing. Check your environment variables.");
+  }
+
+  console.log("Using OpenAI API Key:", `"${openaiAPIKey.substring(0, 5)}..."`); // Mask key for security
 
   const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
     codeChanges
   )}`;
 
-  const response = await axios.post(
-    "https://api.openai.com/v1/chat/completions",
-    {
-      model: "gpt-4",
-      messages: [{ role: "user", content: prompt }],
-    },
-    {
-      headers: { Authorization: `Bearer ${openaiAPIKey}` },
-    }
-  );
+  try {
+    const response = await axios.post(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        model: "gpt-4",
+        messages: [{ role: "user", content: prompt }],
+      },
+      {
+        headers: { Authorization: `Bearer ${openaiAPIKey}` },
+      }
+    );
 
-  return response.data.choices[0].message.content;
+    return response.data.choices[0].message.content;
+  } catch (error) {
+    console.error("OpenAI API Error:", error.response?.data || error.message);
+    throw error;
+  }
 }
 
+
 async function postReviewComment(reviewText) {
+  if (!prNumber) {
+    throw new Error("PR_NUMBER is missing or invalid.");
+  }
+
   await octokit.issues.createComment({
     owner,
     repo,
