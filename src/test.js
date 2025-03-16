@@ -4,11 +4,3 @@ function greeting() {
 
 greeting();
 
-sdfnjslaj
-lsdflksd
-
-function
-
-
-dsfjds
-function
