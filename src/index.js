@@ -1,16 +1,15 @@
 import "dotenv/config";
 import { Octokit } from "@octokit/rest";
 import axios from "axios";
+import fs from "fs/promises"; // Import fs/promises for async reading
 
 const octokit = new Octokit({
-  auth: process.env.GH_TOKEN || "", 
+  auth: process.env.GH_TOKEN || "",
 });
 
 const owner = "XI4507";
 const repo = "code-bot";
-const prNumber = Number(process.env.PR_NUMBER); 
-
-console.log("PR Number:", prNumber);
+const prNumber = Number(process.env.PR_NUMBER);
 
 async function getChangedFiles() {
   if (!prNumber) {
@@ -30,24 +29,34 @@ async function getChangedFiles() {
 }
 
 async function getReviewFromAI(codeChanges) {
-  const openaiAPIKey = process.env.OPENAI_API_KEY?.trim(); 
+  const openaiAPIKey = process.env.OPENAI_API_KEY?.trim();
 
   if (!openaiAPIKey) {
-    throw new Error("OPENAI_API_KEY is missing. Check your environment variables.");
+    throw new Error(
+      "OPENAI_API_KEY is missing. Check your environment variables."
+    );
   }
 
-  console.log("Using OpenAI API Key:", `"${openaiAPIKey.substring(0, 5)}..."`); 
-
-  const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
-    codeChanges
-  )}`;
-
   try {
+    // Read the guidelines from guidelines.md
+    const guidelines = await fs.readFile("guidelines.md", "utf-8");
+
+    const prompt = `Guidelines:\n${guidelines}\n\nCode Changes:\n${JSON.stringify(
+      codeChanges
+    )}\n\nReview this code following the given guidelines.`;
+
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
         model: "gpt-4",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          {
+            role: "system",
+            content:
+              "You are a code review assistant following given guidelines.",
+          },
+          { role: "user", content: prompt },
+        ],
       },
       {
         headers: { Authorization: `Bearer ${openaiAPIKey}` },
@@ -60,7 +69,6 @@ async function getReviewFromAI(codeChanges) {
     throw error;
   }
 }
-
 
 async function postReviewComment(reviewText) {
   if (!prNumber) {
