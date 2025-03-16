@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { Octokit } from "@octokit/rest";
 import axios from "axios";
-import fs from "fs/promises"; // Import fs/promises for async reading
+import fs from "fs/promises"; 
 
 const octokit = new Octokit({
   auth: process.env.GH_TOKEN || "",
