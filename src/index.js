@@ -10,7 +10,7 @@ const owner = "XI4507";
 const repo = "code-bot";
 const prNumber = Number(process.env.PR_NUMBER); 
 
-console.log("PR Number:", prNumber);
+
 
 async function getChangedFiles() {
   if (!prNumber) {
