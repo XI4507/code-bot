@@ -1,16 +1,22 @@
-import "dotenv/config"; 
+import "dotenv/config";
 import { Octokit } from "@octokit/rest";
-import axios from "axios"; 
+import axios from "axios";
 
 const octokit = new Octokit({
-  auth: process.env.GITHUB_TOKEN,
+  auth: process.env.GH_TOKEN || "", 
 });
 
 const owner = "XI4507";
 const repo = "code-bot";
-const prNumber = process.env.GITHUB_PR_NUMBER;
+const prNumber = Number(process.env.PR_NUMBER); 
+
+console.log("PR Number:", prNumber);
 
 async function getChangedFiles() {
+  if (!prNumber) {
+    throw new Error("PR_NUMBER is missing or invalid.");
+  }
+
   const { data } = await octokit.pulls.listFiles({
     owner,
     repo,
@@ -19,12 +25,12 @@ async function getChangedFiles() {
 
   return data.map((file) => ({
     filename: file.filename,
-    patch: file.patch, 
+    patch: file.patch,
   }));
 }
 
 async function getReviewFromAI(codeChanges) {
-  const openaiAPIKey = process.env.OPENAI_API_KEY;
+  const openaiAPIKey = process.env.OPENAI_API_KEY; 
 
   const prompt = `Review the following code changes and provide feedback:\n\n${JSON.stringify(
     codeChanges
@@ -45,6 +51,10 @@ async function getReviewFromAI(codeChanges) {
 }
 
 async function postReviewComment(reviewText) {
+  if (!prNumber) {
+    throw new Error("PR_NUMBER is missing or invalid.");
+  }
+
   await octokit.issues.createComment({
     owner,
     repo,
