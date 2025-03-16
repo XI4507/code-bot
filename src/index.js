@@ -9,7 +9,7 @@ const octokit = new Octokit({
 const owner = "XI4507";
 const repo = "code-bot";
 const prNumber = process.env.GITHUB_PR_NUMBER;
-console.log(process.env.GITHUB_PR_NUMBER);
+
 
 async function getChangedFiles() {
   const { data } = await octokit.pulls.listFiles({
