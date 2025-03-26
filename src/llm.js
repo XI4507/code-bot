@@ -11,7 +11,6 @@ export async function getReviewFromAI(codeChanges) {
   }
 
   try {
-    // Read guidelines from file
     const guidelines = await fs.readFile("guidelines.md", "utf-8");
 
     const prompt = `Guidelines:\n${guidelines}\n\nCode Changes:\n${JSON.stringify(
@@ -22,22 +21,38 @@ export async function getReviewFromAI(codeChanges) {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4",
+        model: "gpt-4o-mini-2024-07-18",
         messages: [
           {
             role: "system",
             content:
-              "You are a code review assistant following given guidelines and returning structured comments.",
+              "You are a code review assistant following given guidelines and returning structured comments.if the code is perfect no need to comment un-neccessary",
           },
           { role: "user", content: prompt },
         ],
       },
       {
-        headers: { Authorization: `Bearer ${openaiAPIKey}` },
+        headers: {
+          Authorization: `Bearer ${openaiAPIKey}`,
+          "Content-Type": "application/json",
+        },
       }
     );
 
-    return JSON.parse(response.data.choices[0].message.content);
+    const content = response.data?.choices?.[0]?.message?.content;
+
+    if (content) {
+      try {
+        const review = JSON.parse(content);
+        return review;
+      } catch (parseError) {
+        console.error("Failed to parse JSON content:", content);
+        throw new Error("Invalid JSON format in AI response.");
+      }
+    } else {
+      console.error("Unexpected response format:", response.data);
+      throw new Error("No content returned by OpenAI.");
+    }
   } catch (error) {
     console.error("OpenAI API Error:", error.response?.data || error.message);
     throw error;
