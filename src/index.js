@@ -6,7 +6,7 @@ const prNumber = Number(process.env.PR_NUMBER);
 
 async function runBot() {
   try {
-    console.log("Fetching PR changes...");
+    console.log(`Fetching changes for PR #${prNumber}...`);
     const files = await getChangedFiles(prNumber);
 
     if (!files.length) {
@@ -14,8 +14,17 @@ async function runBot() {
       return;
     }
 
+    console.log("Extracting code changes...");
+    const codeChanges = files.flatMap((file) =>
+      file.lines.map((line) => ({
+        filename: file.filename,
+        line,
+        patch: file.patch,
+      }))
+    );
+
     console.log("Requesting AI review...");
-    const reviewComments = await getReviewFromAI(files);
+    const reviewComments = await getReviewFromAI(codeChanges);
 
     if (!reviewComments.length) {
       console.log("No review comments generated.");

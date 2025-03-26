@@ -5,28 +5,26 @@ export async function getReviewFromAI(codeChanges) {
   const openaiAPIKey = process.env.OPENAI_API_KEY?.trim();
 
   if (!openaiAPIKey) {
-    throw new Error(
-      "OPENAI_API_KEY is missing. Check your environment variables."
-    );
+    throw new Error("OPENAI_API_KEY is missing. Check your environment variables.");
   }
 
   try {
     const guidelines = await fs.readFile("guidelines.md", "utf-8");
 
-    const prompt = `Guidelines:\n${guidelines}\n\nCode Changes:\n${JSON.stringify(
-      codeChanges
-    )}\n\nReview the given code changes and provide line-specific comments in JSON format as:
+    const prompt = `
+    Guidelines:\n${guidelines}\n\n
+    Code Changes:\n${JSON.stringify(codeChanges, null, 2)}\n\n
+    Review the given code changes and provide line-specific comments in JSON format:
     [{"filename": "file1.js", "line": 10, "comment": "This line can be optimized."}, ...]`;
 
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4o-2024-05-13", // Using GPT-4o Mini
+        model: "gpt-4o-2024-05-13",
         messages: [
           {
             role: "system",
-            content:
-              "You are a code review assistant following given guidelines and returning structured comments.",
+            content: "You are a precise code review assistant. Return JSON only. No explanations.",
           },
           { role: "user", content: prompt },
         ],
