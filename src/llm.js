@@ -21,12 +21,12 @@ export async function getReviewFromAI(codeChanges) {
     const response = await axios.post(
       "https://api.openai.com/v1/chat/completions",
       {
-        model: "gpt-4o-mini-2024-07-18",
+        model: "gpt-4o-2024-05-13", // Using GPT-4o Mini
         messages: [
           {
             role: "system",
             content:
-              "You are a code review assistant following given guidelines and returning structured comments.if the code is perfect no need to comment un-neccessary",
+              "You are a code review assistant following given guidelines and returning structured comments.",
           },
           { role: "user", content: prompt },
         ],
@@ -39,15 +39,17 @@ export async function getReviewFromAI(codeChanges) {
       }
     );
 
-    const content = response.data?.choices?.[0]?.message?.content;
+    let content = response.data?.choices?.[0]?.message?.content;
 
     if (content) {
+      content = content.replace(/```json|```/g, "").trim();
+
       try {
         const review = JSON.parse(content);
         return review;
       } catch (parseError) {
-        console.error("Failed to parse JSON content:", content);
-        throw new Error("Invalid JSON format in AI response.");
+        console.error("Failed to parse cleaned JSON content:", content);
+        throw new Error("Invalid JSON format after cleaning.");
       }
     } else {
       console.error("Unexpected response format:", response.data);
