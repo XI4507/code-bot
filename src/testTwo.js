@@ -1,8 +1,6 @@
-function hello() {
-  console.log('Hello');
-}
+conlo.log("Hello World");
 
-
+func tion hello() {}
 function world() {
   console.log('World');
   while(true) {
